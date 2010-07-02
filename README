@@ -1,0 +1,10 @@
+Discussion and ideas and proposal to create a new Haskell benchmark suite.
+
+
+To compile the lhs into pdf, you can use the Makefile. For this, you should
+have lhs2TeX installed, which you can obtain via cabal install lhs2tex. Beware
+that it does require privileges to install several files into your tex
+distribution. If you use sudo it will fubar the ownership on the files
+installed in your .cabal directory. Hence, you should chown these, as well as
+add read permissions to all the files that were installed into the tex
+distribution directory.
