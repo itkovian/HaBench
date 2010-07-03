@@ -1,11 +1,9 @@
-\documentclass[[a4paper]{article}
+\documentclass[[a4paper, preprint]{sigplanconf}
 
 
 \usepackage{url}
 \usepackage{amsmath}
 
-\title{HaBench: Towards a Standard Haskell Benchmark Suite}
-\author{Andy Georges}
 
 %include lhs2TeX.fmt
 %include lhs2TeX.sty
@@ -14,6 +12,12 @@
 \remarktrue
 
 \begin{document}
+
+\title{HaBench: Towards a Standard Haskell Benchmark Suite}
+
+\authorinfo{Andy Georges}
+           {Ghent University}
+           {andy.georges'at'elis.ugent.be}
 
 \maketitle
 
@@ -50,8 +54,8 @@ runtime system rather than the application~\cite{eeckhout:2003:How}. Following
 based on {\em nofib} and named {\em nobench}. However, this suite suffers from the
 same issues as its predecessor.
 
-In this paper, we present a new benchmark suite for Haskell, where we focus on the 
-following criteria (in no particular order.
+In this proposal, we present a new benchmark suite for Haskell, where we focus on the 
+following criteria (in no particular order).
 
 \begin{itemize}
 
@@ -68,8 +72,10 @@ That should be OK, if the distiction between imaginary and spectral can be
 qualified well.}
 
 \item Ideally, the benchmarks use no compiler extensions and they adhere to the
-Haskell 2010 language standard. Hence, htey can be compiled by most, if not
-all, Haskell compilers out there.
+Haskell 2010 language standard. Hence, they can be compiled by most, if not
+all, Haskell compilers out there. Conversely, by requiring that benchmark code
+adheres to the Haskell language standard, compiler writers can validate their
+tool by verifying the suite is compiled correctly.
 
 \item The benchmarks must be able to scale according to their input set. Also,
 it is important there are multiple input sets available, if only to potentially
@@ -79,25 +85,60 @@ throughout the execution.
 \end{itemize}
 
 
-The remainder of this paper is organised as follows ...
+The remainder of this proposal is organised as follows. First we discuss more
+in depth the various aspects that have an impact on the implementation and use
+of the benchmarks. Next, we discuss the provisions we need to make to allow good 
+evaluation practices to be used, i.e., to allow rigorous benchmarking. Third, we 
+talk about how we will evaluate the benchmarks and finally we conclude.
+
 
 \section{Benchmarks}
 
-\subsection{I/O and command line arguments}
+In this section, we explore more in depth what the requirements are for each
+candidate benchmark. We distinguish several areas that are important:
+processing of command line arguments, input and output, library code, and
+finally, input sets that direct the execution of the benchmark application.
+
+
+\subsection{Command line arguments}
+
+Typically, non-interactive applications use two methods to steer their
+execution. Either they accept command line arguments, or they employ a
+configuration file, or a combination of both. Providing command line arguments
+seems to allow easier scripting, and it is the method of choice used by most
+classical benchmark suites, e.g., SPEC CPU. There are multiple ways to parse
+command line arguments in Haskell: ad hoc, by having a fixed ordering of the
+arguments, by using a standard library such as {\tt Getopt}. For the latter,
+the Haskell wiki describes a number of ways in which this can be done
+(\url{http://www.haskell.org/haskellwiki/GetOpt}). 
+
+
+\subsection{Input and output}
+
 
 To ensure that the benchmarks can be used easily by as many researchers as
 possible, each employing their own framework to steer benchmark execution, it
 is important that every benchmark in the suite can be called in the same
-manner. In our opinion, no benchmark should read from standard input or write
-actual results to standard output. Of course, it is perfectly acceptable if a
-benchmark writes the occasional message to standard output, but actual results,
-e.g., compressed file, should be written to the filesystem. Thus, all files
-that contain input to the benchmark must be passed along as arguments on the
-command line. As a consequence, command line arguments must be parsed.  There
-are many ways to do this, so we should settle on some choice and make sure
-people can avoid this boilerplate. The Haskell Wiki has some examples
-(\url{http://www.haskell.org/haskellwiki/GetOpt}). \remark{If there are others, please
-add.}
+manner. Current benchmarks from e.g., the nofib suite use two ways to get data
+from their input sets: they either read from standard input (via {\tt
+getContents}), redirecting it from a file in the shell, or they actually open a
+file containing the relevant data and read that file (via {\tt readfile}).  We
+feel there should be a single approach used by all HaBench applications, namely
+read the input data from a file, rather than standard input. Likewise, output
+should be written to a file, rather than standard output. This has the added
+advantage that the output can be compared easily afterward and does not mess up
+other useful information that can be printed on the standard output channel,
+for example, performance data, execution times, etc. 
+
+How then should the files be read? Traditionally, Haskell offers a {\tt String} type,
+essentially a list of {\tt Char}. It has been known for quite some time that the
+performance of {\tt String} is less than stellar. Recently, {\tt ByteString} has been added
+to the hackage repository, allowing Haskell applications to have good, if not
+excellent, functions to read and write data from and to filesi, respectively.
+In our opinion, this library should be used.
+
+\remark{This may conflict with the desire to use pure Haskell code, see the next section. Is
+ByteString using C underneath?}
 
 
 \subsection{Use of native libraries}
@@ -138,7 +179,7 @@ Obviously $f$ will not be straightforward, but its existence seems to be
 essential for deciding if the set of microbenchmarks is {\em good} in some
 sense.
 
-\section{Input sets}
+\subsection{Input sets}
 
 Preferably, every benchmark has multiple input sets. Ideally, they excercise
 different code paths and are sufficiently large to ensure the execution lasts
@@ -146,10 +187,15 @@ long enough.
 
 \section{Critetionifying}
 
-
+Criterion~\cite{} is the library of choice for evaluating the performance of
+Haskell code. 
 
 \section{Evaluation}
 
+\remark{Here we should discuss the essential characteristics that the
+benchmarks exhibit, show that they are covering the space pretty well (e.g., by
+using PCA), quantify their performance with different (recent versions) of GHC,
+etc.}
 
 \section{Conclusion}
 
