@@ -141,7 +141,7 @@ In our opinion, this library should be used.
 ByteString using C underneath?}
 
 
-\subsection{Use of native libraries}
+\subsection{Use of (native) libraries}
 
 Hackage has a ton of libraries that provide bindings to native -- C and friends
 -- libraries. This has the obvious advantage that Haskell applications can use
@@ -150,6 +150,19 @@ With the GHC code generation that can deliver excellent code, it should be
 possible to use pure Haskell libraries. This has the added advantage that every
 enhancement to the Haskell compiler has an immediate effect on the library that
 is used by the benchmark. 
+
+A second concern is the use of libraries in itself. Benchmarks can used for a
+variety of purposes, the first and foremost to gauge the performance of the
+code on a given platform, but they can also be used to explore compiler
+optiisations, runtime settings, etc. In this light, relying on cabal/hackage to
+install libraries may not be the best choice. That would require rebuilding the
+libraries on the system time and again, for each set of compiler settings in
+such an exploration. Hence, we think it would be best if the benchmark includes
+the souce code from the libraries it relies on. On the other hand, this
+approach brings about its own issues. Which version to use, keep the source
+code in sync with the latest version on Hackage, etc. Can we (ab)use hackage to
+host HaBench there and automagically download the sources for any library
+dependencies?
 
 \subsection{Micro vs. macrobenchmarks}
 
@@ -188,7 +201,53 @@ long enough.
 \section{Critetionifying}
 
 Criterion~\cite{} is the library of choice for evaluating the performance of
-Haskell code. 
+Haskell code. It is especially useful in the context of short running
+applications or functions. However, good benchmarking practice shows that the
+approach taken by Criterion is useful at all times, even though one may not
+need 100 samples for longer running applications -- 30 might suffice. For this
+reason, we deem it necessary that every benchmark is also accesibly through the
+(specialised) Criterion main function. In particular, it is vital that the
+benchmark's own main function can be called using only standard functionality
+available in Haskell and Criterion -- i.e., no hacks to redirect stdin or
+stdout, etc. We propose that there be tow main functions present: (i) one that
+allows simple command line instatiation of the benchmark, provided the correct
+argument are given, and (ii) one that specialised the Criterion main. For
+example, in the case of the {\tt anna} benchmark, these might look as follows,
+respectively.
+
+\begin{code}
+module AnnaMain(main) where
+
+main :: IO ()
+main = do
+  args <- getArgs
+  options <- parseOptions args
+  contents <- readFile (input options)
+  <snip>
+  writeFile (output options) results
+\end{code}
+
+and for Criterion, we propose to adhere to the following structure.
+
+\begin{code}
+module Main (main) where
+
+import Criterion.Main
+import System.Environment
+
+import qualified AnnaMain as B
+
+main = defaultMain [ 
+          bgroup "nobench default" 
+                 [ bench ("Anna default") $ 
+                   whnfIO $ 
+                   withArgs [ "--input=big.cor" 
+                            , "--output=big.output"
+                            ] 
+                   B.main]
+       ]
+
+\end{code}
 
 \section{Evaluation}
 
@@ -199,6 +258,10 @@ etc.}
 
 \section{Conclusion}
 
+We set out to construct a new Haskell benchmark suite that reflects current
+state-of-the-art Haskell programming style. For this, we will design a framework
+that is both widely usable and extendible. The benchmarks we will select to be
+part of this suite should respect the various criteria we outlined.
 
 \section{Acknowldgements}
 
