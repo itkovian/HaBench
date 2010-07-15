@@ -1,0 +1,57 @@
+
+> I've started a proposal as to how I see the suite and the framework
+> where the benchmarks should be fitted into and what the various
+> issues may be. Feel free to comment :-) I'm doing this pretty much in
+> the open, though I hope this might eventually be turned into a paper
+> (Haskell Symposium 2011, perhaps?). The git repo (yes, git, sorry) is
+> at github: http://github.com/itkovian/HaBench. It is pretty much in
+> its quite initial stage, though I plan to add things to it in the
+> near future.
+
+Thanks for starting this - looks good.
+
+If you haven't read it already, look at the original nofib paper, there's lots of good rationale there.
+
+http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.53.4124
+
+In particular, the difference between imaginary and spectral is that the former tend to be algorithms chosen or designed specifically for benchmarking, whereas the latter are algorithms that you might find in real programs.  The imaginary programs tend to be small (<1 page).
+
+> BTW, smarlow, if you still have those pointers to apps lying
+> someplace, feel free to mail them.
+
+Here are some, these are mostly spectrals I think:
+
+* The shootout benchmarks
+* Don Stewart's uvector benchmarks (or equivalently for vector)
+* vector benchmark in http://stackoverflow.com/questions/3115540
+* Greg Wright's big bang simulator: [[http://www.haskell.org/pipermail/glasgow-haskell-users/2010-March/018631.html]]
+* Benchmark from http://hackage.haskell.org/trac/ghc/ticket/4004
+* Jon Harrop's Heap Sort [[http://flyingfrogblog.blogspot.com/2010/05/purely-functional-heap-sort-in-ocaml-f.html]]
+
+A new benchmark suite should contain benchmarks for things not in Haskell 98, e.g.
+
+- FFI
+- concurrency
+- parallelism
+
+> I'm feeling that at least two major Haskell apps which a lot of
+> people use should be part of the suite, i.e., GHC and darcs. I am not
+> sure how to define input sets for these, but for darcs, there is a
+> banchmark suite available, so we might extend this to hold large(r)
+> inputs.
+
+Unfortunately getting either GHC or darcs into an encapsulated benchmarkable state would be quite difficult.
+
+- extensions: both of these programs use GHC extensions heavily
+- dependencies: they both make heavy use of external libraries,
+  which would presumably have to be bundled.
+- I/O: darcs in particular spends a lot of its time doing
+  I/O and filesystem operations.  You don't want the benchmark
+  to be dependent on OS performance, or depend on features of
+  Unix filesystems (hard links).
+- platform dependencies: both darcs and GHC do certain things
+  differently depending on whether they're on Windows or
+  Unix platforms.
+
+There are probably more issues that I haven't thought of.  Anyway, you would have to eliminate all of these in order to make a self-contained benchmark.
+
