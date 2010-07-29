@@ -110,7 +110,8 @@ classical benchmark suites, e.g., SPEC CPU. There are multiple ways to parse
 command line arguments in Haskell: ad hoc, by having a fixed ordering of the
 arguments, by using a standard library such as {\tt Getopt}. For the latter,
 the Haskell wiki describes a number of ways in which this can be done
-(\url{http://www.haskell.org/haskellwiki/GetOpt}). 
+(\url{http://www.haskell.org/haskellwiki/GetOpt}). A viable alternative to this
+is the {\tt CmdArgs} library.
 
 
 \subsection{Input and output}
@@ -256,6 +257,10 @@ benchmarks exhibit, show that they are covering the space pretty well (e.g., by
 using PCA), quantify their performance with different (recent versions) of GHC,
 etc.}
 
+\remark{Idea. Compare the nofib benchmarks in their MICA and performace counter
+characteristics with e.g., SPEC CPU. Do we get a similar distribution? How
+platform dependent is this distribution?}
+
 \section{Conclusion}
 
 We set out to construct a new Haskell benchmark suite that reflects current
@@ -263,7 +268,7 @@ state-of-the-art Haskell programming style. For this, we will design a framework
 that is both widely usable and extendible. The benchmarks we will select to be
 part of this suite should respect the various criteria we outlined.
 
-\section{Acknowldgements}
+\section{Acknowledgements}
 
 \begin{thebibliography}{10}
 
