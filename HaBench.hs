@@ -1,6 +1,14 @@
-module HaBench where 
+--module HaBench where 
 
+import Data.ConfigFile
+import System.Environment (getArgs)
 import System.IO (FilePath)
+
+-- THOUGHTS
+-- specify command line to run benchmark with, for each workload
+-- run benchmark in a sandbox directory: "haddock F.hs -o . -d -h > stdout 2> stderr"
+-- copy output files we're interested in, remove sandbox
+-- specified command line should be useable both by criterion and the benchmark
 
 -- data type for a benchmark
 data Benchmark = Benchmark {
@@ -52,5 +60,13 @@ data PrecisionValidator = PrecisionValidator Double
 instance Validator PrecisionValidator where
     isValid (PrecisionValidator p) _ = return True -- FIXME
 
+-- read HaBench configuration file
+readConfig :: FilePath -> IO String
+readConfig fp = return fp
+
 -- dummy main
-main = putStr "HaBench"
+main = do
+	args <- getArgs
+	let fp = head args
+	cfg <- readConfig fp
+	putStrLn cfg
