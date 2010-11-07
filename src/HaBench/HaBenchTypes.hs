@@ -1,11 +1,10 @@
 -- | HaBench module
 --
-module HaBench 
+module HaBenchTypes
   ()
   where 
 
 import Data.ConfigFile
-import System.Environment (getArgs)
 import System.IO (FilePath)
 
 -- THOUGHTS
@@ -66,30 +65,24 @@ data Output = Stdout | Stderr | OutputFile FilePath
 -- must be provided by the benchmark implementor, and as such, he must be able to produce e.g.
 -- an implementation of a DiffValidator or an implementation of a PrecisionValidator. At this 
 -- point it is unclear to me if this should be done here. I guess not.
+type ExitCode = Int
+type Report = [String]
+
 class Validator a where
   --isValid :: Monad m => a -> m Bool
-  isValid :: a -> Workload -> IO Bool -- ^ Check that the workload produced a valid output
+  isValid :: a -> Workload -> IO (ExitCode, Report) -- ^ Check that the workload produced a valid output
 
 -- | Description of a simple diff'ing validator
 data DiffValidator = DiffValidator
 
 instance Validator DiffValidator where
-  isValid _ = return . and . map validateOutput . wOutput
+  isValid _ = return . (\v -> if v then (0, []) else (1, [])) . and . map validateOutput . wOutput
       where validateOutput (fp, voFp) = True -- FIXME
 
 -- | Description of a precision-based validator
 data PrecisionValidator = PrecisionValidator Double
 
 instance Validator PrecisionValidator where
-    isValid (PrecisionValidator p) _ = return True -- FIXME
+    isValid (PrecisionValidator p) _ = return (0, []) -- FIXME
 
--- read HaBench configuration file
-readConfig :: FilePath -> IO String
-readConfig fp = return fp
 
--- dummy main
-main = do
-	args <- getArgs
-	let fp = head args
-	cfg <- readConfig fp
-	putStrLn cfg
